@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interactive Buttons Game</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        position: relative;
+        padding: 20px;
+      }
+
+      .title {
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+
+      .question {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 40px;
+        text-align: center;
+        background: rgba(255,255,255,0.1);
+        padding: 20px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+      }
+
+      .button-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 50px;
+      }
+
+      .accept-btn {
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        font-weight: bold;
+      }
+
+      .accept-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      }
+
+      .reject-btn {
+        background: linear-gradient(45deg, #f44336, #da190b);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+        font-weight: bold;
+        position: fixed;
+        z-index: 1000;
+      }
+
+      .reject-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .success-message {
+        color: white;
+        font-size: 2rem;
+        text-align: center;
+        background: rgba(76, 175, 80, 0.2);
+        padding: 30px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(76, 175, 80, 0.5);
+        animation: celebration 0.6s ease-in-out;
+      }
+
+      @keyframes celebration {
+        0% { transform: scale(0.8); opacity: 0; }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      .attempt-counter {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        background: rgba(255,255,255,0.2);
+        padding: 10px 15px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      function MyApp() {
+        const [accepted, setAccepted] = useState(false);
+        const [rejectPosition, setRejectPosition] = useState({ x: window.innerWidth/2 + 100, y: window.innerHeight/2 });
+        const [attempts, setAttempts] = useState(0);
+
+        const handleAccept = () => {
+          setAccepted(true);
+        };
+
+        const handleRejectHover = () => {
+          setAttempts(prev => prev + 1);
+
+          // Button dimensions (approximate)
+          const buttonWidth = 150;
+          const buttonHeight = 60;
+
+          // Safe margins from edges
+          const margin = 50;
+
+          // Get current viewport dimensions
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+
+          // Calculate safe boundaries
+          const minX = margin;
+          const minY = margin;
+          const maxX = viewportWidth - buttonWidth - margin;
+          const maxY = viewportHeight - buttonHeight - margin;
+
+          // Ensure we have valid boundaries
+          const safeMaxX = Math.max(minX, maxX);
+          const safeMaxY = Math.max(minY, maxY);
+
+          // Generate random position within safe boundaries
+          const randomX = Math.random() * (safeMaxX - minX) + minX;
+          const randomY = Math.random() * (safeMaxY - minY) + minY;
+
+          // Double check boundaries
+          const newX = Math.max(minX, Math.min(safeMaxX, randomX));
+          const newY = Math.max(minY, Math.min(safeMaxY, randomY));
+
+          console.log('Viewport:', viewportWidth, 'x', viewportHeight);
+          console.log('New position:', newX, newY);
+          console.log('Boundaries - minX:', minX, 'maxX:', safeMaxX, 'minY:', minY, 'maxY:', safeMaxY);
+
+          setRejectPosition({ x: newX, y: newY });
+        };
+
+        const resetGame = () => {
+          setAccepted(false);
+          setAttempts(0);
+          setRejectPosition({ x: window.innerWidth/2 + 100, y: window.innerHeight/2 });
+        };
+
+        if (accepted) {
+          return (
+            <div className="container">
+              <div className="success-message">
+                <h2>🎉 hore kita muncak andong 🎉</h2>
+                <p></p>
+              
+                <button
+                  className="accept-btn"
+                  onClick={resetGame}
+                  style={{ marginTop: '20px' }}
+                >
+                  Main Lagi
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="container">
+            <div className="attempt-counter">
+              Percobaan muncak slamet {attempts}
+            </div>
+
+            <h1 className="title">slamet ato andong</h1>
+
+            <div className="question">
+               
+            </div>
+
+            <div className="button-container">
+              <button
+                className="accept-btn"
+                onClick={handleAccept}
+              >
+                
+                gas andong aja ah mager gweh👍
+              </button>
+
+              <button
+                className="reject-btn"
+                onMouseEnter={handleRejectHover}
+                onClick={handleRejectHover}
+                style={{
+                  left: `${rejectPosition.x}px`,
+                  top: `${rejectPosition.y}px`,
+                }}
+              >
+                  gas slamet wo😍
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<MyApp />);
+
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this page for starting a new React project with JSX:
+      https://react.dev/learn/start-a-new-react-project
+
+      Read this page for adding React with JSX to an existing project:
+      https://react.dev/learn/add-react-to-an-existing-project
+    -->
+  </body>
+</html>
